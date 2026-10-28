@@ -13,7 +13,7 @@ env:
 
 jobs:
   build:
-    runs-on: windows-2025
+    runs-on: windows-2022
     permissions:
       id-token: write
       attestations: write
@@ -22,6 +22,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+
+      - name: Configure x86 build environment
+        shell: pwsh
+        run: |
+          $vsPath = "D:\VS2022\IDE"
+
+          if (!(Test-Path $vsPath)) {
+            throw "Visual Studio 2022 not found at $vsPath"
+          }
+
+          "vs2022_install=$vsPath" >> $env:GITHUB_ENV
+          "GYP_MSVS_VERSION=2022" >> $env:GITHUB_ENV
+          "GYP_MSVS_OVERRIDE_PATH=$vsPath" >> $env:GITHUB_ENV
+          "DEPOT_TOOLS_WIN_TOOLCHAIN=0" >> $env:GITHUB_ENV
+
+          "BuildDir=$env:GITHUB_WORKSPACE/out/windows/x86" >> $env:GITHUB_ENV
+          "ANGLEStaticName=angle-x86-windows-static-chromium-$env:ANGLE_Branch-sdk-10.0.26100.0" >> $env:GITHUB_ENV
 
       - name: Create Dir
         shell: bash
